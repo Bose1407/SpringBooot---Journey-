@@ -3,21 +3,28 @@ package hotfoot.learning.hotfoot_learning.controllers;
 
 import hotfoot.learning.hotfoot_learning.entity.UserEntity;
 import hotfoot.learning.hotfoot_learning.repositry.UserRepositry;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+@AllArgsConstructor
 @RestController
 @RequestMapping("/api/users")
 public class UserControllers {
     @Autowired
     private UserRepositry userRepositry;
+
+    private PasswordEncoder passwordEncoder;
+
+
     @GetMapping("/")
     public ResponseEntity<List<UserEntity>> sayHello(){
         List<UserEntity> users = userRepositry.findAll();
@@ -29,6 +36,7 @@ public class UserControllers {
             if(userRepositry.existsByEmail(user.getEmail())){
                 return  new ResponseEntity<>("Email Already registered, use another email",HttpStatus.CONFLICT);
             }
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
             return new ResponseEntity<>(userRepositry.save(user),HttpStatus.CREATED);
     }
 
@@ -62,5 +70,7 @@ public class UserControllers {
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
+
+
 
 }
